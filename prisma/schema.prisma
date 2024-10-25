@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") 
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model User {
+  id                    String         @id @default(uuid())
+  name                  String?
+  email                 String?        @unique
+  password              String?
+  phone                 String? 
+  gender                String?
+  birthDate             DateTime?      @map(name: "birth_date")
+  createdDate           DateTime       @default(now()) @map(name: "created_date")
+  updatedDate           DateTime       @updatedAt @map(name: "updated_date")
+  customer              Customer[]    
+  invoice               Invoice[] 
+  item                  Item[]
+
+
+  @@map(name: "users")
+}
+
+model Customer {
+  id              String          @id @default(uuid())
+  customerEmail   String?         @unique @map("customer_email")
+  type            String?         
+  name            String?
+  address         String?
+  paymentMethod   String?          @map("payment_method")
+  user            User?            @relation(fields: [userId], references: [id])
+  userId          String?          @map(name: "user_id")
+  invoice         Invoice[]
+  item            Item[]
+  deletedAt       DateTime?
+
+@@map(name: "customer")
+}
+
+model Invoice {
+  id              String          @id @default(uuid())
+  invoiceNumber   String?         @map(name: "invoice_number")
+  status          String          @default("Pending")
+  quantity        Float?          @default(1)
+  customerName    String?
+  totalPrice      Float?
+  tax             Float?        
+  invoiceDate     DateTime        @default(now()) @map(name: "invoice_date")
+  dueDate         DateTime        @default(now()) @map(name: "due_date")
+  termsCondition  String
+  customer        Customer?       @relation(fields: [customerId], references: [id])
+  customerId      String?         @map(name: "customer_id")
+  item            Item?           @relation(fields: [itemId], references: [id])
+  itemId          String?         @map(name: "product_id")
+  user            User            @relation(fields: [userId], references: [id])
+  userId          String          @map(name: "user_id")
+  deletedAt       DateTime?
+  scheduleDate    DateTime?
+  recurrenceType  String?
+  nextInvoiceDate DateTime?   
+  products        ProductItem[]
+
+@@map(name: "invoice")  
+}
+
+model ProductItem {
+  id              String          @id @default(uuid())
+  itemId          String
+  quantity        Float
+  price           Float
+  name            String?
+  invoice         Invoice[]
+}
+
+
+model Item {
+  id                String           @id @default(uuid())
+  name              String
+  price             Float?
+  type              String?
+  user              User?            @relation(fields: [userId], references: [id])
+  userId            String?          @map(name: "user_id")
+  customer          Customer?        @relation(fields: [customerId], references: [id])
+  customerId        String?          @map(name: "customer_id")
+  categoryItemId    String?          @map(name: "category_item")
+  taxId             String?          @map(name: "tax_id")
+  deletedAt         DateTime?
+  invoice           Invoice[]
+
+
+@@map(name: "item")
+}
+
+
+model RecurringInvoice {
+  id              String          @id @default(uuid())
+  date            DateTime        @default(now()) @map(name: "date")
+
+@@map(name: "recurring_invoice")  
+}

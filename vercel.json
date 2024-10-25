@@ -1,0 +1,7 @@
+{
+  "build": {
+    "env": {
+      "PRISMA_SCHEMA_PATH": "apps/api/prisma/schema.prisma"
+    }
+  }
+}
